@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Queue extends Model
 {
     public const STATUS_PENDING = 'pending';
+    public const STATUS_QUEUED = 'queued';
     public const STATUS_PLAYING = 'playing';
     public const STATUS_PLAYED = 'played';
 
@@ -29,9 +30,24 @@ class Queue extends Model
         return $query->where('status', self::STATUS_PENDING);
     }
 
+    public function scopeQueued(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_QUEUED);
+    }
+
     public function scopePlaying(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_PLAYING);
+    }
+
+    /**
+     * Tracks that will play but are not yet audible: those still waiting in
+     * line (pending) plus the one already buffered by Liquidsoap (queued).
+     * This is what listeners see as "Up next".
+     */
+    public function scopeUpNext(Builder $query): Builder
+    {
+        return $query->whereIn('status', [self::STATUS_PENDING, self::STATUS_QUEUED]);
     }
 
     /** FIFO ordering for the queue. */

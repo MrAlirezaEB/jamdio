@@ -119,6 +119,33 @@ class AdminController extends Controller
         return back()->with('success', "{$user->nickname} was blocked.");
     }
 
+    /** Lift a block so the guest (and their IP) can re-join. */
+    public function unblockUser(User $user): RedirectResponse
+    {
+        $user->forceFill(['is_blocked' => false])->save();
+
+        return back()->with('success', "{$user->nickname} was unblocked.");
+    }
+
+    /**
+     * Permanently remove a guest: disconnect them and delete the record.
+     * Their skip votes cascade away; uploaded tracks are kept (uploaded_by
+     * is nulled by the foreign key).
+     */
+    public function removeUser(User $user): RedirectResponse
+    {
+        $nickname = $user->nickname;
+
+        $this->terminateSession($user);
+
+        broadcast(new UserKicked($user->id, 'removed'));
+        broadcast(new UserLeft($user->id));
+
+        $user->delete();
+
+        return back()->with('success', "{$nickname} was removed.");
+    }
+
     // ---- Helpers ---------------------------------------------------------
 
     /** Invalidate the guest's stored server-side session row. */

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { onBeforeUnmount, onMounted, reactive } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, watch } from 'vue';
 
 const props = defineProps({
     stationStatus: { type: String, default: 'on' },
@@ -16,6 +16,20 @@ const state = reactive({
     users: [...props.users],
 });
 
+// Re-sync local state whenever Inertia delivers fresh props. Every admin action
+// redirects back to the dashboard with updated props; without this the local
+// `state` stays frozen at its initial values and the UI only changes on a manual
+// page refresh. Echo broadcasts mutate `state` directly between prop updates.
+watch(
+    () => [props.stationStatus, props.nowPlaying, props.queue, props.users],
+    () => {
+        state.stationStatus = props.stationStatus;
+        state.nowPlaying = props.nowPlaying;
+        state.queue = [...props.queue];
+        state.users = [...props.users];
+    },
+);
+
 const opts = { preserveScroll: true, preserveState: true };
 
 const toggleStation = () => router.post('/admin/station/toggle', {}, opts);
@@ -23,6 +37,12 @@ const forceSkip = () => router.post('/admin/skip', {}, opts);
 const remove = (q) => router.delete(`/admin/queue/${q.queue_id}`, opts);
 const kick = (u) => router.post(`/admin/users/${u.id}/kick`, {}, opts);
 const block = (u) => router.post(`/admin/users/${u.id}/block`, {}, opts);
+const unblock = (u) =>
+    router.post(`/admin/users/${u.id}/unblock`, {}, { ...opts, onSuccess: () => (u.is_blocked = false) });
+const removeUser = (u) => {
+    if (!window.confirm(`Remove ${u.nickname}? This permanently deletes the guest.`)) return;
+    router.delete(`/admin/users/${u.id}`, opts);
+};
 const logout = () => router.post('/admin/logout');
 
 const move = (index, delta) => {
@@ -42,6 +62,30 @@ onMounted(() => {
     channel.listen('.QueueUpdated', (e) => (state.queue = e.queue ?? []));
     channel.listen('.TrackChanged', (e) => (state.nowPlaying = e.nowPlaying));
     channel.listen('.StationToggled', (e) => (state.stationStatus = e.status));
+
+    channel.listen('.UserJoined', (e) => {
+        if (!e.user) return;
+        const existing = state.users.find((u) => u.id === e.user.id);
+        if (existing) {
+            existing.is_online = true;
+        } else {
+            state.users.unshift({ ...e.user, is_online: true, is_blocked: false });
+        }
+    });
+    channel.listen('.UserLeft', (e) => {
+        const u = state.users.find((x) => x.id === e.userId);
+        if (u) u.is_online = false;
+    });
+    channel.listen('.UserKicked', (e) => {
+        if (e.reason === 'removed') {
+            state.users = state.users.filter((x) => x.id !== e.userId);
+            return;
+        }
+        const u = state.users.find((x) => x.id === e.userId);
+        if (!u) return;
+        u.is_online = false;
+        if (e.reason === 'blocked') u.is_blocked = true;
+    });
 });
 onBeforeUnmount(() => window.Echo && window.Echo.leave('station'));
 </script>
@@ -116,6 +160,8 @@ onBeforeUnmount(() => window.Echo && window.Echo.leave('station'));
                             <td class="text-right space-x-2 whitespace-nowrap">
                                 <button class="text-amber-400 hover:text-amber-300" @click="kick(u)">Kick</button>
                                 <button v-if="!u.is_blocked" class="text-rose-400 hover:text-rose-300" @click="block(u)">Block</button>
+                                <button v-else class="text-emerald-400 hover:text-emerald-300" @click="unblock(u)">Unblock</button>
+                                <button class="text-rose-500 hover:text-rose-400" @click="removeUser(u)">Remove</button>
                             </td>
                         </tr>
                         <tr v-if="!state.users.length"><td colspan="4" class="py-2 text-slate-500">No listeners yet.</td></tr>

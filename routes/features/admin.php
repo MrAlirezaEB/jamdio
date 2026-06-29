@@ -23,5 +23,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // User management
         Route::post('users/{user}/kick', [AdminController::class, 'kickUser'])->name('users.kick');
         Route::post('users/{user}/block', [AdminController::class, 'blockUser'])->name('users.block');
+        Route::post('users/{user}/unblock', [AdminController::class, 'unblockUser'])->name('users.unblock');
+        Route::delete('users/{user}', [AdminController::class, 'removeUser'])->name('users.remove');
     });
 });
