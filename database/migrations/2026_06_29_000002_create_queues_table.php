@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('queues', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('track_id')->constrained()->cascadeOnDelete();
+            $table->enum('status', ['pending', 'playing', 'played'])
+                ->default('pending')
+                ->index();
+            $table->timestamps(); // created_at drives FIFO ordering
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('queues');
+    }
+};
