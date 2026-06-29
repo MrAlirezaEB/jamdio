@@ -50,5 +50,11 @@
 
     <security>
         <chroot>0</chroot>
+        <!-- Icecast refuses to run as root; start as root to bind the port,
+             then drop privileges to the unprivileged icecast user. -->
+        <changeowner>
+            <user>icecast</user>
+            <group>icecast</group>
+        </changeowner>
     </security>
 </icecast>

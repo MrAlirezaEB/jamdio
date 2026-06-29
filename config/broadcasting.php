@@ -36,7 +36,10 @@ return [
             'secret' => env('REVERB_APP_SECRET'),
             'app_id' => env('REVERB_APP_ID'),
             'options' => [
-                'host' => env('REVERB_HOST'),
+                // Host the server-side broadcaster (app/worker) pushes events to.
+                // In Docker this is the Reverb service name, not the public host
+                // the browser uses (REVERB_HOST). Falls back to REVERB_HOST.
+                'host' => env('REVERB_PUSH_HOST', env('REVERB_HOST')),
                 'port' => env('REVERB_PORT', 443),
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',

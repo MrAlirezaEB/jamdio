@@ -144,6 +144,14 @@ npm run dev
 `TrackChanged` · `QueueUpdated` · `VoteCountUpdated` · `UserJoined` ·
 `UserLeft` · `UserKicked` · `StationToggled`
 
+Broadcasts are queued (`QUEUE_CONNECTION=database`) and dispatched by the
+**`worker`** container — it must be running for realtime to work, or events pile
+up unsent in the `jobs` table. Two Reverb hosts are intentionally split: the
+browser connects via `REVERB_HOST` (`localhost`), while the app/worker push
+events server-side via `REVERB_PUSH_HOST` — the Docker service name `reverb`,
+since `localhost` inside a container isn't the Reverb container. Outside Docker,
+leave `REVERB_PUSH_HOST` unset and it falls back to `REVERB_HOST`.
+
 Skip-vote rule: a track skips when votes **>50%** of *active* users (those whose
 `last_active_at` is within `ACTIVE_USER_WINDOW` seconds, default 30). Tunable via
 `SKIP_VOTE_THRESHOLD` / `ACTIVE_USER_WINDOW`.

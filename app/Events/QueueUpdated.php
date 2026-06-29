@@ -14,8 +14,8 @@ class QueueUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets;
 
-    /** @param array<int, array<string, mixed>> $queue */
-    public function __construct(public array $queue)
+    /** @param array<int, array<string, mixed>> $tracks */
+    public function __construct(public array $tracks)
     {
     }
 
@@ -32,6 +32,6 @@ class QueueUpdated implements ShouldBroadcast
     /** @return array<string, mixed> */
     public function broadcastWith(): array
     {
-        return ['queue' => $this->queue];
+        return ['queue' => $this->tracks];
     }
 }
