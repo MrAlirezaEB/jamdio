@@ -35,6 +35,10 @@ return [
         'telnet_host' => env('LIQUIDSOAP_TELNET_HOST', 'liquidsoap'),
         'telnet_port' => (int) env('LIQUIDSOAP_TELNET_PORT', 1234),
         'fallback_dir' => env('LIQUIDSOAP_FALLBACK_DIR', '/srv/fallback'),
+        // The same fallback directory as the app container sees it. Liquidsoap
+        // reads ./docker/fallback at /srv/fallback (reload_mode="watch"); the app
+        // writes here and Liquidsoap hot-reloads without a restart.
+        'fallback_app_dir' => env('LIQUIDSOAP_FALLBACK_APP_DIR', base_path('docker/fallback')),
         // Telnet command the .liq script exposes to force-skip the current track.
         'skip_command' => env('LIQUIDSOAP_SKIP_COMMAND', 'radio.skip'),
     ],
@@ -62,6 +66,16 @@ return [
     |--------------------------------------------------------------------------
     */
     'admin_password' => env('ADMIN_PASSWORD', 'change-me-admin'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Emoji reactions
+    |--------------------------------------------------------------------------
+    | Allowlist of emoji a listener may fling onto the player. Anything not in
+    | this list is rejected by ReactionController — the client only ever sends
+    | these, so the list is the single source of truth for both ends.
+    */
+    'reactions' => ['❤️', '😍', '😢', '👍', '👎'],
 
     /*
     |--------------------------------------------------------------------------

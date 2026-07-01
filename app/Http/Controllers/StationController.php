@@ -37,9 +37,10 @@ class StationController extends Controller
     }
 
     /** The live player dashboard. */
-    public function player(): Response
+    public function player(Request $request): Response
     {
         $current = $this->queue->currentPayload();
+        $guest = $request->attributes->get('guest_user');
 
         return Inertia::render('Player', [
             'nowPlaying' => $current,
@@ -48,6 +49,10 @@ class StationController extends Controller
             'voteStatus' => $current
                 ? $this->skipVotes->status((int) $current['track_id'])
                 : ['current' => 0, 'required' => 0],
+            'hasVoted' => $current && $guest
+                ? $this->skipVotes->hasVoted($guest, (int) $current['track_id'])
+                : false,
+            'reactions' => config('radio.reactions', []),
         ]);
     }
 

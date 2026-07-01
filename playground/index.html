@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Music Player with Visualizer</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body id="test">
+  <div class="wrapper">
+  <div class="player">
+    <div class="equalizer" id="equalizer">
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+      <div class="vertical"></div>
+    </div>
+
+    <div class="controls" style="display: none;">
+      <div class="line progress">
+
+        <span class="current-time">0:00</span>&nbsp;/&nbsp;<span class="duration">2:50</span>
+        <input type="range" class="progress-bar" name="progress" value=0 min=0 max=100 step="0.1" disabled />
+      </div>
+
+      <div class="line">
+        <button class="play-pause" data-playing="false" role="switch" aria-checked="false">
+        </button>
+        <span class="description">Anitek - Komorebi</span>
+        <div class="volume">
+          <input type="range" name="volume" min="0" max="2" value="1" step="0.01" id="range-volume" />
+          <input type="checkbox" name="mute" id="mute">
+          <label for="mute" class="unmute">
+            <img src="http://upload.wikimedia.org/wikipedia/commons/3/3f/Mute_Icon.svg" alt="Mute_Icon.svg" title="Mute icon">
+          </label>
+          <label for="mute" class="mute">
+            <img src="http://upload.wikimedia.org/wikipedia/commons/2/21/Speaker_Icon.svg" alt="Speaker_Icon.svg" title="Unmute/speaker icon">
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>

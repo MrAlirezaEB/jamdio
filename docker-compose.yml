@@ -56,6 +56,8 @@ services:
     environment:
       JAMDIO_ROLE: reverb
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    # Realtime dies silently if this exits, so always bring it back.
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
@@ -72,6 +74,10 @@ services:
     environment:
       JAMDIO_ROLE: worker
     command: php artisan queue:work --tries=3 --timeout=90
+    # Broadcasts (queue/now-playing UI updates) run through this worker. If it
+    # crashes and stays down, the whole realtime UI silently stops updating —
+    # so always restart it.
+    restart: unless-stopped
     volumes:
       - .:/var/www/html
     depends_on:

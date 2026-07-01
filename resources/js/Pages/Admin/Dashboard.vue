@@ -1,12 +1,13 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { onBeforeUnmount, onMounted, reactive, watch } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
     stationStatus: { type: String, default: 'on' },
     nowPlaying: { type: Object, default: null },
     queue: { type: Array, default: () => [] },
     users: { type: Array, default: () => [] },
+    fallback: { type: Array, default: () => [] },
 });
 
 const state = reactive({
@@ -14,6 +15,7 @@ const state = reactive({
     nowPlaying: props.nowPlaying,
     queue: [...props.queue],
     users: [...props.users],
+    fallback: [...props.fallback],
 });
 
 // Re-sync local state whenever Inertia delivers fresh props. Every admin action
@@ -21,12 +23,13 @@ const state = reactive({
 // `state` stays frozen at its initial values and the UI only changes on a manual
 // page refresh. Echo broadcasts mutate `state` directly between prop updates.
 watch(
-    () => [props.stationStatus, props.nowPlaying, props.queue, props.users],
+    () => [props.stationStatus, props.nowPlaying, props.queue, props.users, props.fallback],
     () => {
         state.stationStatus = props.stationStatus;
         state.nowPlaying = props.nowPlaying;
         state.queue = [...props.queue];
         state.users = [...props.users];
+        state.fallback = [...props.fallback];
     },
 );
 
@@ -54,6 +57,45 @@ const move = (index, delta) => {
 };
 
 const when = (iso) => (iso ? new Date(iso).toLocaleTimeString() : '—');
+
+const fileInput = ref(null);
+const uploading = ref(false);
+
+const uploadFallback = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    router.post(
+        '/admin/fallback',
+        { track: file },
+        {
+            ...opts,
+            forceFormData: true,
+            onStart: () => (uploading.value = true),
+            onFinish: () => {
+                uploading.value = false;
+                if (fileInput.value) fileInput.value.value = '';
+            },
+        },
+    );
+};
+
+const removeFallback = (name) => {
+    if (!window.confirm(`Remove “${name}” from the fallback playlist?`)) return;
+    router.delete(`/admin/fallback/${encodeURIComponent(name)}`, opts);
+};
+
+const fileSize = (bytes) => {
+    if (!bytes) return '—';
+    const mb = bytes / (1024 * 1024);
+    return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
+};
+
+const clock = (secs) => {
+    if (!secs) return '—';
+    const m = Math.floor(secs / 60);
+    const s = String(secs % 60).padStart(2, '0');
+    return `${m}:${s}`;
+};
 
 let channel = null;
 onMounted(() => {
@@ -117,6 +159,36 @@ onBeforeUnmount(() => window.Echo && window.Echo.leave('station'));
             <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-100 ring-1 ring-slate-700 hover:bg-slate-700" @click="forceSkip">
                 ⏭ Force skip
             </button>
+        </section>
+
+        <!-- Fallback music -->
+        <section class="rounded-2xl bg-slate-900/80 ring-1 ring-slate-800 p-6">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-200">Fallback music ({{ state.fallback.length }})</p>
+                    <p class="text-xs text-slate-500">Played on shuffle whenever the queue is empty.</p>
+                </div>
+                <label
+                    class="cursor-pointer rounded-lg bg-cyan-500/20 px-4 py-2 text-sm font-medium text-cyan-300 ring-1 ring-cyan-500/40 hover:bg-cyan-500/30"
+                    :class="uploading ? 'opacity-50 pointer-events-none' : ''"
+                >
+                    {{ uploading ? 'Uploading…' : '+ Add MP3' }}
+                    <input ref="fileInput" type="file" accept="audio/mpeg,.mp3" class="hidden" @change="uploadFallback" />
+                </label>
+            </div>
+            <ul class="space-y-2">
+                <li v-for="t in state.fallback" :key="t.name" class="flex items-center justify-between gap-2 text-sm">
+                    <span class="truncate text-slate-300">{{ t.name }}</span>
+                    <div class="flex items-center gap-3 shrink-0 text-slate-500">
+                        <span>{{ clock(t.duration) }}</span>
+                        <span>{{ fileSize(t.size) }}</span>
+                        <button class="px-2 text-rose-400 hover:text-rose-300" @click="removeFallback(t.name)">✕</button>
+                    </div>
+                </li>
+                <li v-if="!state.fallback.length" class="text-sm text-slate-500">
+                    No fallback tracks yet — the stream goes silent when the queue empties.
+                </li>
+            </ul>
         </section>
 
         <div class="grid lg:grid-cols-2 gap-6">

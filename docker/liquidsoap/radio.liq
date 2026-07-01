@@ -92,12 +92,22 @@ fallback_playlist =
 # Absolute safety net so the source never dies, even with an empty playlist.
 safety = blank(id="safety", duration=2.0)
 
-# Prefer user tracks, but only switch on track boundaries so we never cut a
-# song mid-play. Falls through to the playlist, then to silence.
+# Prefer user tracks over the fallback playlist, then silence.
+#
+# track_sensitive=false is deliberate: a freshly uploaded user track must
+# interrupt the fallback filler *immediately* rather than waiting for the
+# current fallback song to end. It also keeps user_queue (request.dynamic)
+# continuously polled — with track_sensitive=true the fallback only re-checks
+# user_queue at a track boundary, so while a (long) fallback song played the
+# dynamic source went dormant and never picked up newly queued tracks.
+#
+# User songs are never cut mid-play: user_queue is the highest-priority source,
+# so nothing can preempt it, and request.dynamic prefetches the next track so
+# there is no gap between consecutive user songs.
 radio =
   fallback(
     id="radio",
-    track_sensitive=true,
+    track_sensitive=false,
     [user_queue, fallback_playlist, safety]
   )
 

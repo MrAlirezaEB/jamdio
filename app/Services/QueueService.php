@@ -114,6 +114,7 @@ class QueueService
             'title' => $playing->track->title,
             'duration' => $playing->track->duration,
             'uploaded_by' => $playing->track->uploader?->nickname,
+            'uploaded_by_avatar' => $playing->track->uploader?->avatar_url,
             'started_at' => $playing->updated_at?->toIso8601String(),
         ];
     }

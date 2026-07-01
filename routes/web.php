@@ -18,6 +18,7 @@ Route::middleware('guest.session')->group(function () {
     // Track submission & skip voting (registered in feature steps below).
     require __DIR__.'/features/queue.php';
     require __DIR__.'/features/voting.php';
+    require __DIR__.'/features/reactions.php';
 });
 
 // ---- Admin control panel (registered in admin step) --------------------

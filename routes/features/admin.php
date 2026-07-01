@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\FallbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -19,6 +20,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('queue/reorder', [AdminController::class, 'reorderQueue'])->name('queue.reorder');
         Route::delete('queue/{queue}', [AdminController::class, 'removeFromQueue'])->name('queue.remove');
         Route::post('skip', [AdminController::class, 'forceSkip'])->name('skip');
+
+        // Fallback music (played when the queue is empty)
+        Route::post('fallback', [FallbackController::class, 'store'])->name('fallback.store');
+        Route::delete('fallback/{name}', [FallbackController::class, 'destroy'])
+            ->where('name', '[A-Za-z0-9._-]+')
+            ->name('fallback.destroy');
 
         // User management
         Route::post('users/{user}/kick', [AdminController::class, 'kickUser'])->name('users.kick');

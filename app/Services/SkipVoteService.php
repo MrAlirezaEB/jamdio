@@ -42,6 +42,15 @@ class SkipVoteService
         return SkipVote::query()->where('track_id', $trackId)->count();
     }
 
+    /** Whether a guest currently has a skip vote recorded for a track. */
+    public function hasVoted(User $user, int $trackId): bool
+    {
+        return SkipVote::query()
+            ->where('track_id', $trackId)
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
     /**
      * Vote status payload for a track: { current, required }.
      *
@@ -79,6 +88,26 @@ class SkipVoteService
         }
 
         return [...$status, 'skipped' => $skipped];
+    }
+
+    /**
+     * Withdraw a guest's vote to skip a track. Broadcasts the new tally.
+     * A withdrawal only ever lowers the count, so it can never trigger a skip.
+     *
+     * @return array{current:int, required:int}
+     */
+    public function retract(User $user, int $trackId): array
+    {
+        SkipVote::query()
+            ->where('track_id', $trackId)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        $status = $this->status($trackId);
+
+        broadcast(new VoteCountUpdated($trackId, $status['current'], $status['required']));
+
+        return $status;
     }
 
     /** Discard recorded votes for a track (called when it leaves the deck). */

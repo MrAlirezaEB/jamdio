@@ -34,4 +34,19 @@ class SkipVoteController extends Controller
                 : "Vote counted ({$result['current']}/{$result['required']}).",
         );
     }
+
+    /** Withdraw the current guest's vote to skip the playing track. */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $guest = $request->attributes->get('guest_user');
+        $current = $this->queue->currentEntry();
+
+        if (! $current) {
+            return back()->with('error', 'Nothing is playing right now.');
+        }
+
+        $status = $this->skipVotes->retract($guest, (int) $current->track_id);
+
+        return back()->with('success', "Vote withdrawn ({$status['current']}/{$status['required']}).");
+    }
 }

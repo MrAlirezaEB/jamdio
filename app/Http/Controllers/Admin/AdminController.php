@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Queue;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\FallbackLibrary;
 use App\Services\LiquidsoapClient;
 use App\Services\QueueService;
 use Illuminate\Http\RedirectResponse;
@@ -23,8 +24,8 @@ class AdminController extends Controller
     public function __construct(
         private readonly QueueService $queue,
         private readonly LiquidsoapClient $liquidsoap,
-    ) {
-    }
+        private readonly FallbackLibrary $fallback,
+    ) {}
 
     /** The admin control panel. */
     public function index(): Response
@@ -34,6 +35,7 @@ class AdminController extends Controller
             'nowPlaying' => $this->queue->currentPayload(),
             'queue' => $this->queue->pendingPayload(),
             'users' => $this->usersPayload(),
+            'fallback' => $this->fallback->all(),
         ]);
     }
 
