@@ -1,6 +1,7 @@
 <script setup>
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import BuyMeACoffee from '../Components/BuyMeACoffee.vue';
 
 const props = defineProps({
     nowPlaying: { type: Object, default: null },
@@ -335,7 +336,10 @@ onBeforeUnmount(() => {
             <span class="font-semibold">Jamdio</span>
             <span class="text-xs text-white/70">· {{ guest?.nickname }}</span>
         </div>
-        <button class="text-sm text-white/80 hover:text-rose-300 transition" @click="leave">Leave</button>
+        <div class="flex items-center gap-3">
+            <BuyMeACoffee />
+            <button class="text-sm text-white/80 hover:text-rose-300 transition" @click="leave">Leave</button>
+        </div>
     </div>
 
     <div
