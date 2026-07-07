@@ -2,6 +2,7 @@
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import BuyMeACoffee from '../Components/BuyMeACoffee.vue';
+import Donito from '../Components/Donito.vue';
 
 const props = defineProps({
     nowPlaying: { type: Object, default: null },
@@ -338,6 +339,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="flex items-center gap-3">
             <BuyMeACoffee />
+            <Donito />
             <button class="text-sm text-white/80 hover:text-rose-300 transition" @click="leave">Leave</button>
         </div>
     </div>
